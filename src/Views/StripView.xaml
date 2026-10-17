@@ -36,6 +36,12 @@
             <ctl:ScrewControl Tag="140" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="6,0,0,6"/>
             <ctl:ScrewControl Tag="100" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6"/>
 
+            <Border x:Name="DropMark" Width="4" HorizontalAlignment="Left" Margin="-5,6,0,6" CornerRadius="2" Background="{StaticResource Amber}" Visibility="Collapsed" Panel.ZIndex="5">
+                <Border.Effect><DropShadowEffect Color="#FF9F1C" ShadowDepth="0" BlurRadius="10"/></Border.Effect>
+            </Border>
+            <Border x:Name="Grip" Width="64" Height="16" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,3,0,0" Background="Transparent" Cursor="SizeAll" ToolTip="Drag to reorder" Panel.ZIndex="4">
+                <Path Data="M0,0 H40 M0,4 H40 M0,8 H40" Stroke="#66000000" StrokeThickness="1.2" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
             <Grid Margin="12,22,12,22">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

@@ -8,12 +8,46 @@ namespace WinMixer.Views;
 
 public partial class StripView : UserControl
 {
+    const string DragFormat = "WinMixerStrip";
     Strip? _strip;
+    Point _dragStart;
+
+    void Grip_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed || _strip == null) return;
+        var d = e.GetPosition(null) - _dragStart;
+        if (Math.Abs(d.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(d.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        Opacity = 0.55;
+        DragDrop.DoDragDrop(this, new DataObject(DragFormat, _strip), DragDropEffects.Move);
+        Opacity = 1;
+    }
+
+    void OnDragOver(object sender, DragEventArgs e)
+    {
+        bool ok = e.Data.GetDataPresent(DragFormat) && e.Data.GetData(DragFormat) != _strip;
+        e.Effects = ok ? DragDropEffects.Move : DragDropEffects.None;
+        DropMark.Visibility = ok ? Visibility.Visible : Visibility.Collapsed;
+        e.Handled = true;
+    }
+
+    void OnDrop(object sender, DragEventArgs e)
+    {
+        DropMark.Visibility = Visibility.Collapsed;
+        if (_strip != null && e.Data.GetData(DragFormat) is Strip dragged && dragged != _strip)
+            App.Engine.MoveStrip(dragged, _strip);
+        e.Handled = true;
+    }
 
     public StripView()
     {
         InitializeComponent();
         TargetBox.ItemsSource = App.Engine.Targets;
+        AllowDrop = true;
+        Grip.MouseLeftButtonDown += (_, e) => _dragStart = e.GetPosition(null);
+        Grip.MouseMove += Grip_MouseMove;
+        DragOver += OnDragOver;
+        DragLeave += (_, _) => DropMark.Visibility = Visibility.Collapsed;
+        Drop += OnDrop;
         DataContextChanged += (_, e) =>
         {
             if (_strip != null) _strip.PropertyChanged -= OnChanged;

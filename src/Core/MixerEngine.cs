@@ -140,6 +140,15 @@ public sealed class MixerEngine : IDisposable
         MarkDirty();
     }
 
+    /// <summary>Moves a strip to the position currently held by another one.</summary>
+    public void MoveStrip(Strip s, Strip before)
+    {
+        int from = Strips.IndexOf(s), to = Strips.IndexOf(before);
+        if (from < 0 || to < 0 || from == to) return;
+        Strips.Move(from, to);
+        MarkDirty();
+    }
+
     public void StripTargetChanged(Strip s)
     {
         s.RefreshSubLabel();
