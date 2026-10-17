@@ -1,0 +1,118 @@
+<Window x:Class="WinMixer.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctl="clr-namespace:WinMixer.Controls"
+        xmlns:v="clr-namespace:WinMixer.Views"
+        Title="WinMixer" Width="1060" Height="570" MinWidth="560" MinHeight="540"
+        WindowStartupLocation="CenterScreen" Background="#14161A" UseLayoutRounding="True">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="58" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border x:Name="Root" BorderBrush="#000000" BorderThickness="1" Background="{x:Static ctl:Tex.Steel}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="28"/>
+            </Grid.RowDefinitions>
+
+            <!-- vignette -->
+            <Border Grid.RowSpan="3" IsHitTestVisible="False">
+                <Border.Background>
+                    <RadialGradientBrush Center="0.5,0.4" RadiusX="0.85" RadiusY="0.85">
+                        <GradientStop Color="#00000000" Offset="0.45"/>
+                        <GradientStop Color="#99000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!-- header -->
+            <Border Grid.Row="0" Background="{x:Static ctl:Tex.Dark}" BorderBrush="#000" BorderThickness="0,0,0,2">
+                <Grid>
+                    <Border BorderBrush="#33FFFFFF" BorderThickness="0,0,0,1"/>
+                    <ctl:ScrewControl Tag="30" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,6,0,0"/>
+                    <Grid Margin="22,0,8,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="{StaticResource Amber}" Margin="0,0,10,0">
+                                <Ellipse.Effect><DropShadowEffect Color="#FF9F1C" ShadowDepth="0" BlurRadius="12" Opacity="1"/></Ellipse.Effect>
+                            </Ellipse>
+                            <TextBlock Style="{StaticResource Engraved}" Text="WIN" FontSize="24" FontWeight="Bold" Foreground="#E8EAEC"/>
+                            <TextBlock Style="{StaticResource Engraved}" Text="MIXER" FontSize="24" FontWeight="Light" Foreground="{StaticResource Amber}" Margin="4,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="34,0,0,0" WindowChrome.IsHitTestVisibleInChrome="True">
+                            <TextBlock Style="{StaticResource Engraved}" Text="PRESET" Foreground="{StaticResource DimBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Grid Width="190">
+                                <ComboBox x:Name="PresetBox" Style="{StaticResource LcdCombo}" Height="28" SelectionChanged="PresetBox_SelectionChanged"/>
+                                <TextBlock x:Name="PresetHint" Text="— none —" IsHitTestVisible="False" Foreground="#7A5A22" FontFamily="Consolas" FontSize="12" Margin="9,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <Button Style="{StaticResource Btn}" Content="SAVE" Margin="8,0,0,0" Click="Save_Click" Height="28"/>
+                            <Button Style="{StaticResource Btn}" Content="SAVE AS…" Margin="4,0,0,0" Click="SaveAs_Click" Height="28"/>
+                            <Button Style="{StaticResource Btn}" Content="DELETE" Margin="4,0,0,0" Click="Delete_Click" Height="28"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" WindowChrome.IsHitTestVisibleInChrome="True">
+                            <ToggleButton x:Name="CtrlBtn" Style="{StaticResource LedToggle}" Tag="#FF9F1C" Content="CONTROLLERS" Height="28" Checked="Panel_Changed" Unchecked="Panel_Changed"/>
+                            <ToggleButton x:Name="SetBtn" Style="{StaticResource LedToggle}" Tag="#FF9F1C" Content="SETTINGS" Height="28" Margin="6,0,14,0" Checked="Panel_Changed" Unchecked="Panel_Changed"/>
+                            <Button Style="{StaticResource Btn}" Content="—" Width="32" Height="28" Click="Min_Click"/>
+                            <Button Style="{StaticResource Btn}" Content="✕" Width="32" Height="28" Margin="4,0,0,0" Click="Close_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- rack -->
+            <Grid Grid.Row="1">
+                <ScrollViewer x:Name="Rack" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Padding="8,4,8,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ItemsControl x:Name="StripList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><v:StripView/></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Style="{StaticResource Btn}" Width="64" Margin="8,6,0,6" Click="Add_Click" ToolTip="Add strip">
+                            <TextBlock Text="+" FontSize="34" FontWeight="Light" Foreground="{StaticResource Amber}"/>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <v:ControllersPanel x:Name="CtrlPanel" Visibility="Collapsed"/>
+                <v:SettingsPanel x:Name="SetPanel" Visibility="Collapsed"/>
+            </Grid>
+
+            <!-- status -->
+            <Border Grid.Row="2" Background="{x:Static ctl:Tex.Dark}" BorderBrush="#000" BorderThickness="0,2,0,0">
+                <Grid Margin="14,0">
+                    <TextBlock Style="{StaticResource Engraved}" Foreground="{StaticResource DimBrush}" VerticalAlignment="Center" Text="MIDI IN"/>
+                    <TextBlock x:Name="MidiLog" Style="{StaticResource LcdLabel}" FontSize="12" VerticalAlignment="Center" Margin="56,0,0,0" Text="waiting for MIDI…"/>
+                    <TextBlock Style="{StaticResource Engraved}" Foreground="{StaticResource DimBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="WINMIXER 1.0"/>
+                </Grid>
+            </Border>
+
+            <!-- name prompt -->
+            <Grid x:Name="Prompt" Grid.RowSpan="3" Visibility="Collapsed" Background="#B0000000">
+                <Border Width="340" CornerRadius="8" Background="{x:Static ctl:Tex.Plate}" BorderBrush="Black" BorderThickness="1.5" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Border.Effect><DropShadowEffect ShadowDepth="6" BlurRadius="20" Opacity="0.8"/></Border.Effect>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Engraved}" FontSize="13" Text="PRESET NAME"/>
+                        <TextBox x:Name="PromptBox" Style="{StaticResource LcdBox}" Margin="0,8,0,12" KeyDown="PromptBox_KeyDown"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource Btn}" Content="CANCEL" Click="PromptCancel_Click"/>
+                            <Button Style="{StaticResource Btn}" Content="SAVE" Margin="6,0,0,0" Click="PromptOk_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
