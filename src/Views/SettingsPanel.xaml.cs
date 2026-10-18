@@ -23,6 +23,19 @@ public partial class SettingsPanel : UserControl
             PosGrid.Children.Add(rb);
         }
         Load();
+        DataPath.Text = _engine.Store.DataDir;
+    }
+
+    void OpenData_Click(object sender, RoutedEventArgs e)
+    {
+        try { System.Diagnostics.Process.Start("explorer.exe", $"\"{_engine.Store.DataDir}\""); } catch { }
+    }
+
+    void Export_Click(object sender, RoutedEventArgs e)
+    {
+        string name = _engine.CurrentPreset.Length > 0 ? _engine.CurrentPreset : "WinMixer";
+        var dlg = new Microsoft.Win32.SaveFileDialog { Title = "Export preset", Filter = "WinMixer preset (*.json)|*.json", FileName = name + ".json" };
+        if (dlg.ShowDialog() == true) _engine.ExportPreset(dlg.FileName);
     }
 
     void Load()

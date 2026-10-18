@@ -19,20 +19,49 @@ public sealed class SettingsStore
     public SettingsStore()
     {
         string exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
-        string dir = Path.Combine(exeDir, "data");
+        string beside = Path.Combine(exeDir, "data");
+        if (CanWrite(beside))
+        {
+            DataDir = beside;
+            return;
+        }
+
+        // Exe lives somewhere read-only (e.g. Program Files): keep the data in AppData,
+        // seeding it once from the "data" folder shipped next to the exe.
+        string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinMixer");
+        Directory.CreateDirectory(Path.Combine(dir, "presets"));
+        DataDir = dir;
+        SeedFrom(beside, dir);
+    }
+
+    static bool CanWrite(string dir)
+    {
         try
         {
             Directory.CreateDirectory(Path.Combine(dir, "presets"));
             string probe = Path.Combine(dir, ".w");
             File.WriteAllText(probe, "");
             File.Delete(probe);
+            return true;
         }
-        catch
+        catch { return false; }
+    }
+
+    static void SeedFrom(string source, string target)
+    {
+        try
         {
-            dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WinMixer");
-            Directory.CreateDirectory(Path.Combine(dir, "presets"));
+            string marker = Path.Combine(target, ".seeded");
+            if (File.Exists(marker) || !Directory.Exists(source)) return;
+            string cfg = Path.Combine(source, "settings.json");
+            if (File.Exists(cfg)) File.Copy(cfg, Path.Combine(target, "settings.json"), true);
+            string presets = Path.Combine(source, "presets");
+            if (Directory.Exists(presets))
+                foreach (var f in Directory.GetFiles(presets, "*.json"))
+                    File.Copy(f, Path.Combine(target, "presets", Path.GetFileName(f)), true);
+            File.WriteAllText(marker, "");
         }
-        DataDir = dir;
+        catch { }
     }
 
     public AppSettings Load()
@@ -90,4 +119,15 @@ public sealed class SettingsStore
     }
 
     public string PresetName(string name) => Safe(name);
+
+    public Preset? ReadPresetFile(string path)
+    {
+        try { return JsonSerializer.Deserialize<Preset>(File.ReadAllText(path), Json); }
+        catch { return null; }
+    }
+
+    public void WritePresetFile(string path, Preset p) =>
+        File.WriteAllText(path, JsonSerializer.Serialize(p, Json));
+
+    public bool PresetExists(string name) => File.Exists(Path.Combine(PresetDir, Safe(name) + ".json"));
 }

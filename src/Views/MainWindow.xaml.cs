@@ -82,6 +82,14 @@ public partial class MainWindow : Window
         PromptBox.SelectAll();
     }
 
+    void OpenFile_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog { Title = "Load preset", Filter = "WinMixer preset (*.json)|*.json|All files|*.*", InitialDirectory = _engine.Store.DataDir };
+        if (dlg.ShowDialog(this) != true) return;
+        if (!_engine.ImportPreset(dlg.FileName))
+            MessageBox.Show(this, "That file is not a valid WinMixer preset.", "WinMixer", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
     void Delete_Click(object sender, RoutedEventArgs e)
     {
         string name = _engine.CurrentPreset;

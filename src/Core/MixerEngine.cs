@@ -454,6 +454,34 @@ public sealed class MixerEngine : IDisposable
         ShowOsdMessage("PRESET", name);
     }
 
+    /// <summary>Reads a preset .json from anywhere on disk, adds it to the preset list and loads it.</summary>
+    public bool ImportPreset(string path)
+    {
+        var p = Store.ReadPresetFile(path);
+        if (p == null || p.Strips == null || p.Strips.Count == 0) return false;
+        string name = Store.PresetName(string.IsNullOrWhiteSpace(p.Name) ? Path.GetFileNameWithoutExtension(path) : p.Name);
+        if (name.Length == 0) name = "Imported";
+        string unique = name;
+        for (int i = 2; Store.PresetExists(unique); i++) unique = $"{name} ({i})";
+        p.Name = unique;
+        Store.SavePreset(p);
+        if (!Presets.Contains(unique))
+        {
+            int idx = 0;
+            while (idx < Presets.Count && string.Compare(Presets[idx], unique, StringComparison.CurrentCultureIgnoreCase) < 0) idx++;
+            Presets.Insert(idx, unique);
+        }
+        LoadPreset(unique);
+        return true;
+    }
+
+    public void ExportPreset(string path)
+    {
+        SaveNow();
+        var name = CurrentPreset.Length > 0 ? CurrentPreset : "WinMixer";
+        Store.WritePresetFile(path, new Preset { Name = name, Strips = Strips.Select(s => s.Config).ToList() });
+    }
+
     public void DeletePreset(string name)
     {
         Store.DeletePreset(name);
